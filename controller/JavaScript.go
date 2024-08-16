@@ -2,82 +2,109 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 )
 
-// Execute JavaScript code
-func javaScript(code string) string {
+func enableCors(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+}
+
+func javaScript(code string) (string, error) {
 	jsFile, err := ioutil.TempFile("", "*.js")
 	if err != nil {
-		panic(err)
+		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
 	defer os.Remove(jsFile.Name())
 
 	_, err = jsFile.Write([]byte(code))
 	if err != nil {
-		panic(err)
+		return "", fmt.Errorf("failed to write to temp file: %v", err)
 	}
 	jsFile.Close()
 
 	cmd := exec.Command("node", jsFile.Name())
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		panic(err)
+		return "", fmt.Errorf("execution error: %v. Output: %s", err, output)
 	}
 
-	return string(output)
+	return string(output), nil
 }
 
-// Execute Python code
-func pythonExecute(code string) string {
+func pythonExecute(code string) (string, error) {
 	pyFile, err := ioutil.TempFile("", "*.py")
 	if err != nil {
-		panic(err)
+		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
 	defer os.Remove(pyFile.Name())
 
 	_, err = pyFile.Write([]byte(code))
 	if err != nil {
-		panic(err)
+		return "", fmt.Errorf("failed to write to temp file: %v", err)
 	}
 	pyFile.Close()
 
 	cmd := exec.Command("/usr/bin/python3", pyFile.Name())
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		panic(err)
+		return "", fmt.Errorf("execution error: %v. Output: %s", err, output)
 	}
 
-	return string(output)
+	return string(output), nil
 }
 
-// Handle JavaScript code execution requests
 func RunJavaScriptCode(w http.ResponseWriter, r *http.Request) {
+	enableCors(w)
+	if r.Method == http.MethodOptions {
+		return // Handle the preflight request by returning early
+	}
+
 	if r.Method == http.MethodPost {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "Failed to read request body", http.StatusInternalServerError)
 			return
 		}
-		output := javaScript(string(body))
-		w.Header().Set("Content-type", "application/text")
+
+		output, err := javaScript(string(body))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(output)
+	} else {
+		http.Error(w, "Error: Only POST method is supported", http.StatusMethodNotAllowed)
 	}
 }
 
-// Handle Python code execution requests
 func RunPythonCode(w http.ResponseWriter, r *http.Request) {
+	enableCors(w)
+	if r.Method == http.MethodOptions {
+		return // Handle the preflight request by returning early
+	}
+
 	if r.Method == http.MethodPost {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "Failed to read request body", http.StatusInternalServerError)
 			return
 		}
-		output := pythonExecute(string(body))
-		w.Header().Set("Content-type", "application/text")
+
+		output, err := pythonExecute(string(body))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(output)
 	} else {
 		http.Error(w, "Error: Only POST method is supported", http.StatusMethodNotAllowed)
