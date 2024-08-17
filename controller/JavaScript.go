@@ -7,13 +7,8 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 )
-
-func enableCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
 
 func javaScript(code string) (string, error) {
 	jsFile, err := ioutil.TempFile("", "*.js")
@@ -60,7 +55,7 @@ func pythonExecute(code string) (string, error) {
 }
 
 func RunJavaScriptCode(w http.ResponseWriter, r *http.Request) {
-	enableCors(w)
+
 	if r.Method == http.MethodOptions {
 		return // Handle the preflight request by returning early
 	}
@@ -68,17 +63,24 @@ func RunJavaScriptCode(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": fmt.Sprintf("Execution error: %v", err)})
 			return
 		}
-
 		output, err := javaScript(string(body))
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			if err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(map[string]string{"error": fmt.Sprintf("Execution error: %v", err)})
+				return
+			}
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+
+		output = strings.TrimSpace(output)
 		json.NewEncoder(w).Encode(output)
 	} else {
 		http.Error(w, "Error: Only POST method is supported", http.StatusMethodNotAllowed)
@@ -86,7 +88,7 @@ func RunJavaScriptCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func RunPythonCode(w http.ResponseWriter, r *http.Request) {
-	enableCors(w)
+
 	if r.Method == http.MethodOptions {
 		return // Handle the preflight request by returning early
 	}
@@ -105,6 +107,7 @@ func RunPythonCode(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		output = strings.TrimSpace(output)
 		json.NewEncoder(w).Encode(output)
 	} else {
 		http.Error(w, "Error: Only POST method is supported", http.StatusMethodNotAllowed)
