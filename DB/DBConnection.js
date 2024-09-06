@@ -1,7 +1,7 @@
 import sqlite3 from "sqlite3";
 const sql3 = sqlite3.verbose();
 
-const ConnectDB = (err) => {
+const ConnectDB = async (err) => {
   if (err) {
     console.log(err);
     return {
