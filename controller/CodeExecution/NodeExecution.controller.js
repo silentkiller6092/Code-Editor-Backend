@@ -1,14 +1,16 @@
 import { exec } from "child_process";
-const PythonExecution = async (req, res) => {
+
+const NodeExecution = async (req, res) => {
   try {
     const code = req.body;
-
-    if (!code)
+    if (!code) {
       return res
-        .staus(404)
-        .json({ status: "error", response: null, error: "Code Required" });
+        .status(400)
+        .json({ status: "error", response: null, error: "Code is required" });
+    }
+
     exec(
-      `python3 -c "${code.replace(/"/g, '\\"')}"`,
+      `node -e "${code.replace(/"/g, '\\"')}"`,
       { timeout: 5000 },
       (err, stdout, stderr) => {
         if (err) {
@@ -37,4 +39,5 @@ const PythonExecution = async (req, res) => {
     });
   }
 };
-export default PythonExecution;
+
+export default NodeExecution;
