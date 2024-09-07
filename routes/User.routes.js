@@ -1,5 +1,10 @@
 import express from "express";
 import { User_Signup } from "../controller/User/Signup.controller.js";
+import { User_Login } from "../controller/User/Login.controller.js";
+import { verifyAccessToken } from "../Middleware/AuthenticateUser.middleware.js";
+import { AuthenticatedResource } from "../controller/User/UserProfile.controller.js";
 const router = express.Router();
 router.post("/signup", User_Signup);
+router.post("/login", User_Login);
+router.get("/profile", verifyAccessToken, AuthenticatedResource);
 export default router;
