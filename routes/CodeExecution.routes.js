@@ -3,5 +3,5 @@ import PythonExecution from "../controller/CodeExecution/PythonExecution.control
 import NodeExecution from "../controller/CodeExecution/NodeExecution.controller.js";
 const router = express.Router();
 router.post("/python", PythonExecution);
-router.post("/node", NodeExecution);
+router.post("/javascript", NodeExecution);
 export default router;

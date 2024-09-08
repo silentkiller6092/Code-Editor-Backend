@@ -16,12 +16,14 @@ const User_Login = async (req, res) => {
       const refreshToken = await createRefreshToekn(userDetail);
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
-        // secure: true,
+        sameSite: "Lax",
+        secure: false,
         maxAge: 15 * 60 * 1000,
       }); // 15 minutes
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        // secure: true,
+        sameSite: "Lax",
+        secure: false,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       }); // 7 days
       return res.status(200).json({
@@ -30,7 +32,6 @@ const User_Login = async (req, res) => {
           user: {
             fullName: userDetail.full_name,
             email: userDetail.email,
-            username: userDetail.username,
           },
         },
       });
@@ -45,7 +46,7 @@ const User_Login = async (req, res) => {
 };
 const createAccessToekn = async (user) => {
   return jsonwebtoken.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, full_name: user.full_name },
     process.env.ACCESS_TOEKN_SECERATE,
     { expiresIn: "1h" }
   );
@@ -53,7 +54,7 @@ const createAccessToekn = async (user) => {
 
 const createRefreshToekn = async (user) => {
   return jsonwebtoken.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, full_name: user.full_name },
     process.env.REFRESH_TOEKN_SECERATE,
     {
       expiresIn: "7d",

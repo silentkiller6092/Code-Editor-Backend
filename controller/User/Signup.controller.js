@@ -3,8 +3,8 @@ import bcrypt from "bcrypt";
 // User Signup Controller
 const User_Signup = async (req, res) => {
   try {
-    const { username, password, email, full_name, phone } = req.body;
-    if (!(username && password && email && full_name && phone)) {
+    const { password, email, full_name } = req.body;
+    if (!(password && email && full_name)) {
       return res.status(400).json({
         status: "error",
         response: null,
@@ -20,18 +20,21 @@ const User_Signup = async (req, res) => {
       });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const query = `INSERT INTO Users (username, password, email, phone, full_name) VALUES (?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO Users (password, email, full_name) VALUES (?, ?, ?)`;
     const response = await DatabaseConnection.run(query, [
-      username,
       hashedPassword,
       email,
-      phone,
       full_name,
     ]);
 
-    return res.status(201).json({
+    return res.status(200).json({
       status: "Success",
-      response: "User Created Successfully",
+      response: {
+        user: {
+          fullName: full_name,
+          email: email,
+        },
+      },
       error: null,
     });
   } catch (err) {
