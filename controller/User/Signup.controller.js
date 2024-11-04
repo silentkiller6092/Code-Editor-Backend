@@ -14,7 +14,7 @@ const User_Signup = async (req, res) => {
     const userExist = await emailAlreadyExist(email);
     if (userExist) {
       return res.status(409).json({
-        status: "Conflict",
+        status: "Error",
         response: null,
         error: "User Already Exists",
       });
@@ -39,7 +39,7 @@ const User_Signup = async (req, res) => {
     });
   } catch (err) {
     return res.status(500).json({
-      status: "error",
+      status: "Error",
       response: null,
       error: err.message,
     });
