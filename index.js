@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import CodeExecution from "./routes/CodeExecution.routes.js";
 import UserRoutes from "./routes/User.routes.js";
+import TemplatesRoute from "./routes/Templates_Projects.routes.js";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -13,18 +14,9 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(cookieParser());
 dotenv.config();
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173",
-//     methods: ["GET", "POST"],
-//     allowedHeaders: ["Content-Type"],
-//     credentials: true,
-//   })
-// );
-
-// Routes for Code Execution
 app.use("/api/v1/execute", CodeExecution);
 app.use("/api/v1/user", UserRoutes);
+app.use("/api/v1/templates", TemplatesRoute);
 app.listen(4000, () => {
   console.log("App is running on port 4000");
 });

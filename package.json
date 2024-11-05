@@ -12,7 +12,7 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.7"
   },
   "name": "code_editor",
   "version": "1.0.0",

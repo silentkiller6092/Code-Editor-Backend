@@ -52,6 +52,7 @@ const refreshAccessToken = async (req, res) => {
           // Compare the verification token from the database with the refresh token
 
           if (user.refresh_token !== refreshToken) {
+            console.log("Token not matched");
             return res.status(403).json({
               status: "Error",
               response: null,
@@ -73,7 +74,7 @@ const refreshAccessToken = async (req, res) => {
           res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
             secure: true,
-            maxAge: 40 * 1000, // Set to 40 seconds
+            maxAge: 86400000, // Set to 40 seconds
           });
 
           return res.status(200).json({
