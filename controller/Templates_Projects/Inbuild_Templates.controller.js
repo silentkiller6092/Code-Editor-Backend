@@ -1,8 +1,7 @@
-import { response } from "express";
 import { DatabaseConnection } from "../../DB/DBConnection.js";
 const All_Templates = async (req, res) => {
   try {
-    const query = `SELECT t.id AS template_id,t.name AS template_name,t.flavor as template_flavour,c.name AS category_name FROM templates t JOIN categories c ON t.category_id = c.id`;
+    const query = `SELECT t.id AS template_id,t.name AS template_name,t.description as template_description,t.flavor as template_flavour,c.name AS category_name FROM templates t JOIN categories c ON t.category_id = c.id`;
     const template_details = await new Promise((resolve, reject) => {
       DatabaseConnection.all(query, (err, rows) => {
         if (err) {
